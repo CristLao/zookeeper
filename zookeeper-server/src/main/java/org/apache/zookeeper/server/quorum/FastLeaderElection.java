@@ -543,7 +543,9 @@ public class FastLeaderElection implements Election {
          * Starts instances of WorkerSender and WorkerReceiver
          */
         void start(){
+            // 启动业务层发送线程, 将消息发送给IO负责类
             this.wsThread.start();
+            // 启动业务层接收线程
             this.wrThread.start();
         }
 
@@ -633,6 +635,7 @@ public class FastLeaderElection implements Election {
     public FastLeaderElection(QuorumPeer self, QuorumCnxManager manager){
         this.stop = false;
         this.manager = manager;
+        // 初始化业务层的发送队列和接收队列
         starter(self, manager);
     }
 
@@ -651,7 +654,9 @@ public class FastLeaderElection implements Election {
         proposedLeader = -1;
         proposedZxid = -1;
 
+        // 业务层发送队列, 业务对象ToSend
         sendqueue = new LinkedBlockingQueue<ToSend>();
+        // 业务层接收队列, 业务对象Notification
         recvqueue = new LinkedBlockingQueue<Notification>();
         this.messenger = new Messenger(manager);
     }

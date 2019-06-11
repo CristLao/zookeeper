@@ -124,6 +124,7 @@ public class QuorumPeerMain {
                 .getSnapRetainCount(), config.getPurgeInterval());
         purgeMgr.start();
 
+        // 判断是standalone模式还是集群模式
         if (args.length == 1 && config.isDistributed()) {
             runFromConfig(config);
         } else {
@@ -157,7 +158,7 @@ public class QuorumPeerMain {
 
           ServerCnxnFactory cnxnFactory = null;
           ServerCnxnFactory secureCnxnFactory = null;
-
+          // 为客户端提供读写的server, 也就是2181这个端口的访问功能
           if (config.getClientPortAddress() != null) {
               cnxnFactory = ServerCnxnFactory.createFactory();
               cnxnFactory.configure(config.getClientPortAddress(),
@@ -172,7 +173,10 @@ public class QuorumPeerMain {
                       true);
           }
 
+          // ZK的逻辑主线程, 负责选举&投票
           quorumPeer = getQuorumPeer();
+
+          // 设置各种参数
           quorumPeer.setRootMetricsContext(metricsProvider.getRootContext());
           quorumPeer.setTxnFactory(new FileTxnSnapLog(
                       config.getDataLogDir(),
@@ -218,7 +222,8 @@ public class QuorumPeerMain {
           }
           quorumPeer.setQuorumCnxnThreadsSize(config.quorumCnxnThreadsSize);
           quorumPeer.initialize();
-          
+
+          // 启动主线程
           quorumPeer.start();
           quorumPeer.join();
       } catch (InterruptedException e) {
